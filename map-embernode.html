@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mapabilly</title>
+    <link rel="stylesheet" href="mapabilly.css">
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0-rc.3/handlebars.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/ember.js/1.0.0-rc.3/ember.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <script>
+      window.Mapp = Ember.Application.create();
+
+      Mapp.MapWithCoordinatesView = Ember.View.extend({
+        templateName: "map-with-coordinates"
+      });
+
+      Mapp.MapView = Ember.View.extend({
+        classNames: ["mapp"],
+
+        didInsertElement: function() {
+          this.$().css({ width: "700px", height: "500px" });
+          var center = new google.maps.LatLng(this.get("latitude"),this.get("longitude"));
+          var mapOptions = {
+            zoom: 15,
+            center: center,
+            scaleControl: true,
+            zoomControl: true,
+            zoomControlOptions: {
+              style: google.maps.ZoomControlStyle.SMALL
+            },
+            panControl: true,
+            mapTypeId: google.maps.MapTypeId.HYBRID
+          };
+          var map = new google.maps.Map(this.$()[0], mapOptions);
+
+          var markerCount = 0;
+          var markers = [];
+          function addMarker(title, position, content) {
+            markerCount++;
+            var marker = new google.maps.Marker({
+              position: position,
+              map: map,
+              title: title,
+              draggable: true
+            });
+            var infowindow = new google.maps.InfoWindow({
+              content: content
+            });
+
+            markers.push([marker, infowindow]);
+            console.log("marker pushed: [" + marker + ", " + infowindow + "]");
+
+            google.maps.event.addListener(marker, 'click', function(event) {
+              infowindow.open(map,marker);
+            });
+          };
+
+          var markerLatlng = new google.maps.LatLng(37.753,-122.412872);
+          var contentString = "CATS";
+          addMarker(contentString, markerLatlng, contentString);
+
+          var marker1Latlng = new google.maps.LatLng(37.751101,-122.412872);
+          var contentString1 = 'Belugastan';
+          addMarker(contentString1, marker1Latlng, contentString1);
+
+          // var marker1 = new google.maps.Marker({
+          //   position: marker1Latlng,
+          //   map: map,
+          //   title: contentString1,
+          //   draggable: false
+          // });
+          // var infowindow1 = new google.maps.InfoWindow({
+          //     content: contentString1
+          // });
+          // google.maps.event.addListener(marker1, 'click', function(event) {
+          //   infowindow1.open(map,marker1);
+          // });
+
+          // var that = this;
+          // google.maps.event.addListener(marker, 'click', function() {
+          //   var position = marker.getPosition();
+          //   that.setProperties({
+          //     latitude: position.lat(),
+          //     longitude: position.lng()
+          //   });
+          //   infowindow.open(map,marker);
+          // });
+          // google.maps.event.addListener(marker, "dragstart", function() {
+          //   that.set("dragging", true);
+          // });
+          // google.maps.event.addListener(marker, "dragend", function() {
+          //   that.set("dragging", false);
+          // });
+        },
+
+        willDestroyElement: function() {
+          google.maps.event.clearInstanceListeners(this.get("marker"));
+        },
+
+        // coordinatesChanged: function() {
+        //   // create a new position object from the marker's position
+        //   var position = new google.maps.LatLng(this.get("latitude"), this.get("longitude"));
+        //   // only center the map when the position has been changed by changing the textfields
+        //   if (!this.get("dragging")) { this.get("map").setCenter(position); }
+        //   // update the position of the marker
+        //   this.get("marker").setPosition(position);
+      });        // }.observes("latitude", "longitude")
+
+
+    </script>
+  </head>
+  <body>
+    
+    <script type="text/x-handlebars">
+      {{view Mapp.MapWithCoordinatesView latitude="37.751101" longitude="-122.412872"}}
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="map-with-coordinates">
+      {{view Mapp.MapView latitudeBinding="view.latitude" longitudeBinding="view.longitude" altitudeBinding="view.altitude"}}
+      {{view Ember.TextField valueBinding="view.latitude"}}
+      {{view Ember.TextField valueBinding="view.longitude"}}
+      {{view Ember.TextField valueBinding="view.altitude"}}
+    </script>
+
+  </body>
+</html>
