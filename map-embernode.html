@@ -5,18 +5,34 @@
     <title>Mapabilly</title>
     <link rel="stylesheet" href="mapabilly.css">
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0-rc.3/handlebars.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/ember.js/1.0.0-rc.3/ember.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/ember.js/1.5.1/ember.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
     <script>
       window.Mapp = Ember.Application.create();
 
-      Mapp.MapWithCoordinatesView = Ember.View.extend({
-        templateName: "map-with-coordinates"
+      Mapp.MapInputView = Ember.View.extend({
+        templateName: "map-input",
+        classNames: ["map-input"],
+      });
+
+      Mapp.MapInputController = Ember.Controller.extend({
+        actions: {
+          submit: function() {
+            var title = this.get("title");
+            var latitude = this.get("latitude");
+            var longitude = this.get("longitude");
+            console.log("MapInputController submit - title: " + title + ", latitude: " + latitude+ ", longitude: " + longitude);
+          }
+        }
       });
 
       Mapp.MapView = Ember.View.extend({
         classNames: ["mapp"],
+        markers: [
+          [37.752, -122.412872, "CATS"],
+          [37.751101, -122.412872, "Belugastan"]
+        ],
 
         didInsertElement: function() {
           this.$().css({ width: "700px", height: "500px" });
@@ -34,93 +50,53 @@
           };
           var map = new google.maps.Map(this.$()[0], mapOptions);
 
-          var markerCount = 0;
-          var markers = [];
+          var markers = this.get("markers");
+          var googleMarkers = [];
+
           function addMarker(title, position, content) {
-            markerCount++;
             var marker = new google.maps.Marker({
               position: position,
               map: map,
               title: title,
-              draggable: true
+              draggable: false
             });
             var infowindow = new google.maps.InfoWindow({
               content: content
             });
-
-            markers.push([marker, infowindow]);
-            console.log("marker pushed: [" + marker + ", " + infowindow + "]");
-
+            googleMarkers.push(marker);
             google.maps.event.addListener(marker, 'click', function(event) {
               infowindow.open(map,marker);
             });
           };
 
-          var markerLatlng = new google.maps.LatLng(37.753,-122.412872);
-          var contentString = "CATS";
-          addMarker(contentString, markerLatlng, contentString);
-
-          var marker1Latlng = new google.maps.LatLng(37.751101,-122.412872);
-          var contentString1 = 'Belugastan';
-          addMarker(contentString1, marker1Latlng, contentString1);
-
-          // var marker1 = new google.maps.Marker({
-          //   position: marker1Latlng,
-          //   map: map,
-          //   title: contentString1,
-          //   draggable: false
-          // });
-          // var infowindow1 = new google.maps.InfoWindow({
-          //     content: contentString1
-          // });
-          // google.maps.event.addListener(marker1, 'click', function(event) {
-          //   infowindow1.open(map,marker1);
-          // });
-
-          // var that = this;
-          // google.maps.event.addListener(marker, 'click', function() {
-          //   var position = marker.getPosition();
-          //   that.setProperties({
-          //     latitude: position.lat(),
-          //     longitude: position.lng()
-          //   });
-          //   infowindow.open(map,marker);
-          // });
-          // google.maps.event.addListener(marker, "dragstart", function() {
-          //   that.set("dragging", true);
-          // });
-          // google.maps.event.addListener(marker, "dragend", function() {
-          //   that.set("dragging", false);
-          // });
+          for (i = 0; i < markers.length; i++) {
+            console.log(markers[i][0], markers[i][1], markers[i][2]);
+            var position = new google.maps.LatLng(markers[i][0], markers[i][1]);
+            var content = markers[i][2];
+            addMarker(content, position, content);
+          }
         },
 
         willDestroyElement: function() {
-          google.maps.event.clearInstanceListeners(this.get("marker"));
-        },
-
-        // coordinatesChanged: function() {
-        //   // create a new position object from the marker's position
-        //   var position = new google.maps.LatLng(this.get("latitude"), this.get("longitude"));
-        //   // only center the map when the position has been changed by changing the textfields
-        //   if (!this.get("dragging")) { this.get("map").setCenter(position); }
-        //   // update the position of the marker
-        //   this.get("marker").setPosition(position);
-      });        // }.observes("latitude", "longitude")
-
-
+          for (i in googleMarkers) {
+            google.maps.event.clearInstanceListeners(googleMarkers[i]);
+          }
+        }
+      });
     </script>
   </head>
   <body>
     
     <script type="text/x-handlebars">
-      {{view Mapp.MapWithCoordinatesView latitude="37.751101" longitude="-122.412872"}}
+      {{view Mapp.MapView latitude="37.751101" longitude="-122.412872"}}
+      {{render "map-input"}}
     </script>
 
-    <script type="text/x-handlebars" data-template-name="map-with-coordinates">
-      {{view Mapp.MapView latitudeBinding="view.latitude" longitudeBinding="view.longitude" altitudeBinding="view.altitude"}}
-      {{view Ember.TextField valueBinding="view.latitude"}}
-      {{view Ember.TextField valueBinding="view.longitude"}}
-      {{view Ember.TextField valueBinding="view.altitude"}}
+    <script type="text/x-handlebars" data-template-name="map-input">
+      {{input type="text" value=title}}
+      {{input type="text" value=latitude}}
+      {{input type="text" value=longitude}}
+      <button {{action "submit" this}}>Add</button>
     </script>
 
   </body>
