@@ -11,21 +11,20 @@
     <script>
       window.Mapp = Ember.Application.create();
 
-      Mapp.MapInputView = Ember.View.extend({
-        templateName: "map-input",
-        classNames: ["map-input"],
-      });
+      // Mapp.ApplicationAdapter = DS.FixtureAdapter;
 
-      Mapp.MapInputController = Ember.Controller.extend({
-        actions: {
-          submit: function() {
-            var title = this.get("title");
-            var latitude = this.get("latitude");
-            var longitude = this.get("longitude");
-            console.log("MapInputController submit - title: " + title + ", latitude: " + latitude+ ", longitude: " + longitude);
-          }
-        }
-      });
+      // Mapp.Cat.FIXTURES = [
+
+      // ];
+
+      // Mapp.Cat = DS.Model.extend({
+      //   name: DS.attr("string"),
+      //   longitude: DS.attr("number"),
+      //   latitude: DS.attr("number"),
+      //   info: function() {
+      //     console.log("Cat: " + this.get("name") + ", Location: " + this.get("longitude") + " " + this.get("latitude"));
+      //   }.property("name", "longitude", "latitude")
+      // });
 
       Mapp.MapView = Ember.View.extend({
         classNames: ["mapp"],
@@ -80,9 +79,28 @@
         willDestroyElement: function() {
           for (i in googleMarkers) {
             google.maps.event.clearInstanceListeners(googleMarkers[i]);
+            console.log("clear listeners");
           }
         }
       });
+
+      Mapp.MapInputView = Ember.View.extend({
+        templateName: "map-input",
+        classNames: ["map-input"],
+      });
+
+      Mapp.MapInputController = Ember.Controller.extend({
+        actions: {
+          submit: function() {
+            var title = this.get("title");
+            var latitude = this.get("latitude");
+            var longitude = this.get("longitude");
+            console.log("MapInputController submit - title: " + title + ", latitude: " + latitude+ ", longitude: " + longitude);
+          }
+        }
+      });
+
+
     </script>
   </head>
   <body>
@@ -93,9 +111,9 @@
     </script>
 
     <script type="text/x-handlebars" data-template-name="map-input">
-      {{input type="text" value=title}}
-      {{input type="text" value=latitude}}
-      {{input type="text" value=longitude}}
+      {{input type="text" value=title placeholder="Title"}}
+      {{input type="text" value=latitude placeholder="Latitude"}}
+      {{input type="text" value=longitude placeholder="Longitude"}}
       <button {{action "submit" this}}>Add</button>
     </script>
 
