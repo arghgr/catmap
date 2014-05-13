@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mapabilly</title>
+    <link rel="stylesheet" href="mapabilly.css">
+  </head>
+  <body>
+
+    <script type="text/x-handlebars" data-template-name="cats">
+      <div class="cats">
+        <h2>cats: {{catCount}}</h2>
+        <ul>
+        {{#each itemController="cat"}}
+          <li {{bind-attr class="isEditing:editing"}}>
+            {{#if isEditing}}
+              {{input type="text" value=catName placeholder=name}}
+              <br>{{input type="text" value=catLongitude placeholder=longitude}}
+              <br>{{input type="text" value=catLatitude placeholder=latitude}}
+              <br><button {{action "saveCat"}}>save changes</button>
+            {{else}}
+              name: {{name}}
+              <br>longitude: {{longitude}}
+              <br>latitude: {{latitude}}
+              <br><button {{action "editCat"}}>edit cat</button>
+              <button {{action "removeCat"}}>remove cat</button>
+            {{/if}}
+          </li>
+        {{/each}}
+        </ul>
+      </div>
+      <div class="new-cat">
+        {{input type="text" class="new-cat-input" placeholder="name" value=newCatName}}
+        {{input type="text" class="new-cat-input" placeholder="longitude" value=newCatLongitude}}
+        {{input type="text" class="new-cat-input" placeholder="latitude" value=newCatLatitude}}
+        <button {{action "submit"}}>add cat</button>
+      </div>
+    </script>
+
+
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/ember.js/1.5.1/ember.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/ember-data.js/1.0.0-beta.7/ember-data.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <script>
+      window.Mapp = Ember.Application.create();
+
+      Mapp.ApplicationAdapter = DS.FixtureAdapter;
+
+      Mapp.Store = DS.Store.extend({
+        adapter: "DS.FixtureAdapter"
+      });
+
+      Mapp.Router.map(function() {
+        this.resource("cats", { path: "/" });
+      });
+
+      Mapp.Cat = DS.Model.extend({
+        name: DS.attr("string"),
+        longitude: DS.attr("number"),
+        latitude: DS.attr("number")
+      });
+
+      Mapp.Cat.FIXTURES = [
+        {
+          id: 1,
+          name: "KITTY",
+          longitude: 37.752,
+          latitude: -122.412872
+        },
+        { id: 2,
+          name: "Belugastan",
+          longitude: 37.751101,
+          latitude: -122.412872
+        },
+        { id: 3,
+          name: "dignified tabby",
+          longitude: 37.751689,
+          latitude: -122.41292
+        }
+      ];
+
+      Mapp.CatsRoute = Ember.Route.extend({
+        model: function() {
+          return this.store.find("cat");
+        }
+      });
+
+      Mapp.CatsController = Ember.ArrayController.extend({
+        catCount: function() {
+          return this.get("length");
+        }.property("@each"),
+
+        actions: {
+          submit: function() {
+            var name = this.get("newCatName");
+            var longitude = this.get("newCatLongitude");
+            var latitude = this.get("newCatLatitude");
+
+            if (!Ember.isEmpty(name) && !Ember.isEmpty(longitude) && !Ember.isEmpty(latitude)) {
+              var cat = this.store.createRecord("cat", {
+                name: name,
+                longitude: longitude,
+                latitude: latitude
+              });
+
+              this.set("newCatName", "");
+              this.set("newCatLongitude", "");
+              this.set("newCatLatitude", "");
+
+              cat.save();
+            } else {
+              alert("not enough info");
+            }
+          }
+        }
+      });
+
+      Mapp.CatController = Ember.ObjectController.extend({
+        isEditing: false,
+        actions: {
+          editCat: function() {
+            this.set("isEditing", true);
+          },
+          saveCat: function() {
+            this.set("isEditing", false);
+
+            var name = this.get("catName");
+            var longitude = this.get("catLongitude");
+            var latitude = this.get("catLatitude");
+            if (!Ember.isEmpty(name)) this.get("model").set("name", name);
+            if (!Ember.isEmpty(longitude)) this.get("model").set("longitude", longitude);
+            if (!Ember.isEmpty(latitude)) this.get("model").set("latitude", latitude);
+
+            this.get("model").save();
+          },
+          removeCat: function() {
+            var cat = this.get("model");
+            cat.deleteRecord();
+            cat.save();
+          }
+        }
+      });
+
+    </script>
+  </body>
+</html>
