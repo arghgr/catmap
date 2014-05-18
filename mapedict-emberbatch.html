@@ -58,10 +58,7 @@
       });
 
       Mapp.Router.map(function() {
-        // this.resource("cats", { path: "/" });
-        // });
         this.resource("cats");
-
       });
 
       Mapp.Cat = DS.Model.extend({
@@ -93,10 +90,6 @@
         model: function() {
           return this.store.find("cat");
         }
-        // ,
-        // renderTemplate: function() {
-        //   this.render("cats", { into: "application" });
-        // }
       });
 
       Mapp.CatsController = Ember.ArrayController.extend({
