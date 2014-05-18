@@ -7,6 +7,10 @@
   </head>
   <body>
 
+    <script type="text/x-handlebars">
+      {{#link-to "cats"}}cats{{/link-to}}
+      {{outlet}}
+    </script>
     <script type="text/x-handlebars" data-template-name="cats">
       <div class="cats">
         <h2>cats: {{catCount}}</h2>
@@ -17,7 +21,8 @@
               {{input type="text" value=catName placeholder=name}}
               <br>{{input type="text" value=catLongitude placeholder=longitude}}
               <br>{{input type="text" value=catLatitude placeholder=latitude}}
-              <br><button {{action "saveCat"}}>save changes</button>
+              <br><button {{action "cancel"}}>cancel</button>
+              <button {{action "saveCat"}}>save changes</button>
             {{else}}
               name: {{name}}
               <br>longitude: {{longitude}}
@@ -53,7 +58,10 @@
       });
 
       Mapp.Router.map(function() {
-        this.resource("cats", { path: "/" });
+        // this.resource("cats", { path: "/" });
+        // });
+        this.resource("cats");
+
       });
 
       Mapp.Cat = DS.Model.extend({
@@ -85,6 +93,10 @@
         model: function() {
           return this.store.find("cat");
         }
+        // ,
+        // renderTemplate: function() {
+        //   this.render("cats", { into: "application" });
+        // }
       });
 
       Mapp.CatsController = Ember.ArrayController.extend({
@@ -134,6 +146,12 @@
             if (!Ember.isEmpty(latitude)) this.get("model").set("latitude", latitude);
 
             this.get("model").save();
+          },
+          cancel: function() {
+            this.set("isEditing", false);
+            this.set("catName", "");
+            this.set("catLongitude", "");
+            this.set("newCatLatitude", "");
           },
           removeCat: function() {
             var cat = this.get("model");
