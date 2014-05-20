@@ -9,6 +9,7 @@
 
     <script type="text/x-handlebars">
       {{#link-to "cats"}}cats{{/link-to}}
+      {{#link-to "map"}}map{{/link-to}}
       {{outlet}}
     </script>
     <script type="text/x-handlebars" data-template-name="cats">
@@ -47,7 +48,6 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/ember.js/1.5.1/ember.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/ember-data.js/1.0.0-beta.7/ember-data.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
     <script>
       window.Mapp = Ember.Application.create();
 
@@ -59,6 +59,7 @@
 
       Mapp.Router.map(function() {
         this.resource("cats");
+        this.resource("map");
       });
 
       Mapp.Cat = DS.Model.extend({
@@ -152,6 +153,112 @@
             cat.save();
           }
         }
+      });
+
+      Mapp.MapView = Ember.View.extend({
+        classNames: ["mapp"],
+        map: null,
+        latitude: -122.412872,
+        longitude: 37.751101,
+        attributeBindings: ["style"],
+        style: "height: 500px; width: 700px;",
+        markers: [
+          [37.752, -122.412872, "CAT"],
+          [37.751101, -122.412872, "Belugastan"]
+        ],
+
+        initializeMap: function() {
+          this.$().css({ width: "700px", height: "500px" });
+          var center = new google.maps.LatLng(this.get("longitude"),this.get("latitude"));
+          var mapOptions = {
+            zoom: 15,
+            center: center,
+            scaleControl: true,
+            zoomControl: true,
+            zoomControlOptions: {
+              style: google.maps.ZoomControlStyle.SMALL
+            },
+            panControl: true,
+            mapTypeId: google.maps.MapTypeId.HYBRID
+          };
+          var map = new google.maps.Map(this.$()[0], mapOptions);
+          this.set("map", map);
+        },
+        loadScript: function() {
+          var self = this;
+          window.initialize = function() {
+            self.initializeMap();
+          }
+          $.getScript("https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=initialize");
+        },
+
+        // loadScript: function() {
+        //   var self = this;
+        //   $.getScript("https://www.google.com/jsapi", function() {
+        //     google.load("maps", "3", {
+        //       other_params: "sensor=false",
+        //       callback: function() { self.initializeMap(); }
+        //     });
+        //   });
+        // },
+
+        didInsertElement: function() {
+          this._super();
+          // this.loadScript();
+          Ember.run.later(this, function() {
+            this.loadScript();
+          }, 1000);
+        }
+
+        // didInsertElement: function() {
+        //   this.$().css({ width: "700px", height: "500px" });
+        //   var center = new google.maps.LatLng(this.get("latitude"),this.get("longitude"));
+        //   var mapOptions = {
+        //     zoom: 15,
+        //     center: center,
+        //     scaleControl: true,
+        //     zoomControl: true,
+        //     zoomControlOptions: {
+        //       style: google.maps.ZoomControlStyle.SMALL
+        //     },
+        //     panControl: true,
+        //     mapTypeId: google.maps.MapTypeId.HYBRID
+        //   };
+        //   var map = new google.maps.Map(this.$()[0], mapOptions);
+        //   this.set("map", map);
+          // var markers = this.get("markers");
+          // var googleMarkers = [];
+
+          // function addMarker(title, position, content) {
+          //   var marker = new google.maps.Marker({
+          //     position: position,
+          //     map: map,
+          //     title: title,
+          //     draggable: false
+          //   });
+          //   var infowindow = new google.maps.InfoWindow({
+          //     content: content
+          //   });
+          //   googleMarkers.push(marker);
+          //   google.maps.event.addListener(marker, 'click', function(event) {
+          //     infowindow.open(map,marker);
+          //   });            
+          // };
+
+          // for (i = 0; i < markers.length; i++) {
+          //   console.log(markers[i][0], markers[i][1], markers[i][2]);
+          //   var position = new google.maps.LatLng(markers[i][0], markers[i][1]);
+          //   var content = markers[i][2];
+          //   addMarker(content, position, content);
+          // }
+        // },
+
+        // willDestroyElement: function() {
+        //   for (i in googleMarkers) {
+        //     google.maps.event.clearInstanceListeners(googleMarkers[i]);
+        //     console.log("clear listeners");
+        //   }
+        // }
       });
 
     </script>
