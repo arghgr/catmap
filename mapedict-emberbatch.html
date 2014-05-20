@@ -72,18 +72,18 @@
         {
           id: 1,
           name: "KITTY",
-          longitude: 37.752,
-          latitude: -122.412872
+          latitude: 37.752,
+          longitude: -122.412872
         },
         { id: 2,
           name: "Belugastan",
-          longitude: 37.751101,
-          latitude: -122.412872
+          latitude: 37.751101,
+          longitude: -122.412872
         },
         { id: 3,
           name: "dignified tabby",
-          longitude: 37.751689,
-          latitude: -122.41292
+          latitude: 37.751689,
+          longitude: -122.41292
         }
       ];
 
@@ -158,8 +158,8 @@
       Mapp.MapView = Ember.View.extend({
         classNames: ["mapp"],
         map: null,
-        latitude: -122.412872,
-        longitude: 37.751101,
+        latitude: 37.751101,
+        longitude: -122.412872,
         attributeBindings: ["style"],
         style: "height: 500px; width: 700px;",
         markers: [
@@ -169,7 +169,7 @@
 
         initializeMap: function() {
           this.$().css({ width: "700px", height: "500px" });
-          var center = new google.maps.LatLng(this.get("longitude"),this.get("latitude"));
+          var center = new google.maps.LatLng(this.get("latitude"),this.get("longitude"));
           var mapOptions = {
             zoom: 15,
             center: center,
