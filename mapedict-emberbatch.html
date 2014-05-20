@@ -184,6 +184,7 @@
           var map = new google.maps.Map(this.$()[0], mapOptions);
           this.set("map", map);
         },
+        
         loadScript: function() {
           var self = this;
           window.initialize = function() {
@@ -192,22 +193,9 @@
           $.getScript("https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=initialize");
         },
 
-        // loadScript: function() {
-        //   var self = this;
-        //   $.getScript("https://www.google.com/jsapi", function() {
-        //     google.load("maps", "3", {
-        //       other_params: "sensor=false",
-        //       callback: function() { self.initializeMap(); }
-        //     });
-        //   });
-        // },
-
         didInsertElement: function() {
           this._super();
-          // this.loadScript();
-          Ember.run.later(this, function() {
-            this.loadScript();
-          }, 1000);
+          this.loadScript();
         }
 
         // didInsertElement: function() {
