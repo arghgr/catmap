@@ -12,6 +12,7 @@
       {{#link-to "map"}}map{{/link-to}}
       {{outlet}}
     </script>
+
     <script type="text/x-handlebars" data-template-name="cats">
       <div class="cats">
         <h2>cats: {{catCount}}</h2>
@@ -162,36 +163,40 @@
         latitude: 37.751101,
         longitude: -122.412872,
         markers: [],
-
-        addMarker: function(map, markers, id, latitude, longitude, name) {
-          var marker = new google.maps.Marker({
-            position: new google.maps.LatLng(latitude, longitude),
-            map: map,
-            title: id,
-            draggable: false
-          });
-          var infowindow = new google.maps.InfoWindow({
-            content: name
-          });
-          markers.push(marker);
-          google.maps.event.addListener(marker, 'click', function(event) {
-            infowindow.open(map,marker);
-          });
-        },
+        infowindow: null,
 
         addMarkers: function() {
           var cats = Mapp.Cat.FIXTURES;
           var addMarker = this.get("addMarker");
           var map = this.get("map");
           var markers = this.get("markers");
+          var self = this;
+
+          function bindInfowindow(marker, content) {
+            google.maps.event.addListener(marker, 'click', function(event) {
+              var infowindow = self.get("infowindow");
+              if (infowindow) {
+                infowindow.close();
+              }
+              infowindow = new google.maps.InfoWindow({ content: content });
+              self.set("infowindow", infowindow);
+              infowindow.open(map,marker);
+            });
+          }
 
           for (i = 0; i < cats.length; i++) {
-            // console.log(cats[i]["name"], cats[i]["latitude"], cats[i]["longitude"]);
             var id = cats[i]["id"].toString();
             var latitude = cats[i]["latitude"];
             var longitude = cats[i]["longitude"]
             var name = cats[i]["name"].toString();
-            addMarker(map, markers, id, latitude, longitude, name);
+            var marker = new google.maps.Marker({
+              position: new google.maps.LatLng(latitude, longitude),
+              map: map,
+              title: id,
+              draggable: false
+            });
+            markers.push(marker);
+            bindInfowindow(marker, name);
           }
         },
 
@@ -222,7 +227,7 @@
           window.initialize = function() {
             self.initializeMap();
           }
-          self.loadMaps();
+          this.loadMaps();
         },
 
         willDestroyElement: function() {
@@ -230,6 +235,7 @@
           for (i = 0; i < markers.length; i++) {
             google.maps.event.clearInstanceListeners(markers[i]);
           }
+          this.set("map", null);
         }
       });
 
