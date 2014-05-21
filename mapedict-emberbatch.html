@@ -20,14 +20,14 @@
           <li {{bind-attr class="isEditing:editing"}}>
             {{#if isEditing}}
               {{input type="text" value=catName placeholder=name}}
-              <br>{{input type="text" value=catLongitude placeholder=longitude}}
               <br>{{input type="text" value=catLatitude placeholder=latitude}}
+              <br>{{input type="text" value=catLongitude placeholder=longitude}}
               <br><button {{action "cancel"}}>cancel</button>
               <button {{action "saveCat"}}>save changes</button>
             {{else}}
               name: {{name}}
-              <br>longitude: {{longitude}}
               <br>latitude: {{latitude}}
+              <br>longitude: {{longitude}}
               <br><button {{action "editCat"}}>edit cat</button>
               <button {{action "removeCat"}}>remove cat</button>
             {{/if}}
@@ -37,8 +37,8 @@
       </div>
       <div class="new-cat">
         {{input type="text" class="new-cat-input" placeholder="name" value=newCatName}}
-        {{input type="text" class="new-cat-input" placeholder="longitude" value=newCatLongitude}}
         {{input type="text" class="new-cat-input" placeholder="latitude" value=newCatLatitude}}
+        {{input type="text" class="new-cat-input" placeholder="longitude" value=newCatLongitude}}
         <button {{action "submit"}}>add cat</button>
       </div>
     </script>
@@ -48,6 +48,7 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/ember.js/1.5.1/ember.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/ember-data.js/1.0.0-beta.7/ember-data.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script>
       window.Mapp = Ember.Application.create();
 
@@ -160,18 +161,44 @@
         map: null,
         latitude: 37.751101,
         longitude: -122.412872,
-        attributeBindings: ["style"],
-        style: "height: 500px; width: 700px;",
-        markers: [
-          [37.752, -122.412872, "CAT"],
-          [37.751101, -122.412872, "Belugastan"]
-        ],
+        markers: [],
+
+        addMarker: function(map, markers, id, latitude, longitude, name) {
+          var marker = new google.maps.Marker({
+            position: new google.maps.LatLng(latitude, longitude),
+            map: map,
+            title: id,
+            draggable: false
+          });
+          var infowindow = new google.maps.InfoWindow({
+            content: name
+          });
+          markers.push(marker);
+          google.maps.event.addListener(marker, 'click', function(event) {
+            infowindow.open(map,marker);
+          });
+        },
+
+        addMarkers: function() {
+          var cats = Mapp.Cat.FIXTURES;
+          var addMarker = this.get("addMarker");
+          var map = this.get("map");
+          var markers = this.get("markers");
+
+          for (i = 0; i < cats.length; i++) {
+            // console.log(cats[i]["name"], cats[i]["latitude"], cats[i]["longitude"]);
+            var id = cats[i]["id"].toString();
+            var latitude = cats[i]["latitude"];
+            var longitude = cats[i]["longitude"]
+            var name = cats[i]["name"].toString();
+            addMarker(map, markers, id, latitude, longitude, name);
+          }
+        },
 
         initializeMap: function() {
-          this.$().css({ width: "700px", height: "500px" });
           var center = new google.maps.LatLng(this.get("latitude"),this.get("longitude"));
           var mapOptions = {
-            zoom: 15,
+            zoom: 16,
             center: center,
             scaleControl: true,
             zoomControl: true,
@@ -183,70 +210,27 @@
           };
           var map = new google.maps.Map(this.$()[0], mapOptions);
           this.set("map", map);
+          this.addMarkers();
         },
-        
-        loadScript: function() {
+
+        loadMaps: function() {
+          google.load("maps", 3, { "callback": initialize });
+        },
+
+        didInsertElement: function() {
           var self = this;
           window.initialize = function() {
             self.initializeMap();
           }
-          $.getScript("https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=initialize");
+          self.loadMaps();
         },
 
-        didInsertElement: function() {
-          this._super();
-          this.loadScript();
+        willDestroyElement: function() {
+          var markers = this.get("markers");
+          for (i = 0; i < markers.length; i++) {
+            google.maps.event.clearInstanceListeners(markers[i]);
+          }
         }
-
-        // didInsertElement: function() {
-        //   this.$().css({ width: "700px", height: "500px" });
-        //   var center = new google.maps.LatLng(this.get("latitude"),this.get("longitude"));
-        //   var mapOptions = {
-        //     zoom: 15,
-        //     center: center,
-        //     scaleControl: true,
-        //     zoomControl: true,
-        //     zoomControlOptions: {
-        //       style: google.maps.ZoomControlStyle.SMALL
-        //     },
-        //     panControl: true,
-        //     mapTypeId: google.maps.MapTypeId.HYBRID
-        //   };
-        //   var map = new google.maps.Map(this.$()[0], mapOptions);
-        //   this.set("map", map);
-          // var markers = this.get("markers");
-          // var googleMarkers = [];
-
-          // function addMarker(title, position, content) {
-          //   var marker = new google.maps.Marker({
-          //     position: position,
-          //     map: map,
-          //     title: title,
-          //     draggable: false
-          //   });
-          //   var infowindow = new google.maps.InfoWindow({
-          //     content: content
-          //   });
-          //   googleMarkers.push(marker);
-          //   google.maps.event.addListener(marker, 'click', function(event) {
-          //     infowindow.open(map,marker);
-          //   });            
-          // };
-
-          // for (i = 0; i < markers.length; i++) {
-          //   console.log(markers[i][0], markers[i][1], markers[i][2]);
-          //   var position = new google.maps.LatLng(markers[i][0], markers[i][1]);
-          //   var content = markers[i][2];
-          //   addMarker(content, position, content);
-          // }
-        // },
-
-        // willDestroyElement: function() {
-        //   for (i in googleMarkers) {
-        //     google.maps.event.clearInstanceListeners(googleMarkers[i]);
-        //     console.log("clear listeners");
-        //   }
-        // }
       });
 
     </script>
