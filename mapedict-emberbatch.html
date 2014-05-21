@@ -159,6 +159,7 @@
 
       Mapp.MapView = Ember.View.extend({
         classNames: ["mapp"],
+        cats: Mapp.Cat.FIXTURES,
         map: null,
         latitude: 37.751101,
         longitude: -122.412872,
@@ -166,8 +167,7 @@
         infowindow: null,
 
         addMarkers: function() {
-          var cats = Mapp.Cat.FIXTURES;
-          var addMarker = this.get("addMarker");
+          var cats = this.get("cats");
           var map = this.get("map");
           var markers = this.get("markers");
           var self = this;
@@ -175,9 +175,7 @@
           function bindInfowindow(marker, content) {
             google.maps.event.addListener(marker, 'click', function(event) {
               var infowindow = self.get("infowindow");
-              if (infowindow) {
-                infowindow.close();
-              }
+              if (infowindow) infowindow.close();
               infowindow = new google.maps.InfoWindow({ content: content });
               self.set("infowindow", infowindow);
               infowindow.open(map,marker);
@@ -201,6 +199,7 @@
         },
 
         initializeMap: function() {
+          var self = this;
           var center = new google.maps.LatLng(this.get("latitude"),this.get("longitude"));
           var mapOptions = {
             zoom: 16,
@@ -214,12 +213,16 @@
             mapTypeId: google.maps.MapTypeId.HYBRID
           };
           var map = new google.maps.Map(this.$()[0], mapOptions);
+          google.maps.event.addListener(map, "click", function(){
+            var infowindow = self.get("infowindow");
+            infowindow.close();
+          });
           this.set("map", map);
           this.addMarkers();
         },
 
-        loadMaps: function() {
-          google.load("maps", 3, { "callback": initialize });
+        loadMaps: function(callback) {
+          google.load("maps", 3, { "callback": callback });
         },
 
         didInsertElement: function() {
@@ -227,15 +230,16 @@
           window.initialize = function() {
             self.initializeMap();
           }
-          this.loadMaps();
+          this.loadMaps(initialize);
         },
 
         willDestroyElement: function() {
+          var map = this.get("map");
           var markers = this.get("markers");
           for (i = 0; i < markers.length; i++) {
             google.maps.event.clearInstanceListeners(markers[i]);
           }
-          this.set("map", null);
+          google.maps.event.clearInstanceListeners(map);
         }
       });
 
