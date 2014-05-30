@@ -7,32 +7,22 @@
   </head>
   <body>
 
-    <script type="text/x-handlebars">
-      {{#link-to "cats"}}cats{{/link-to}}
-      {{#link-to "map"}}map{{/link-to}}
-      {{outlet}}
+    <script type="text/x-handlebars" data-template-name="index">
+      <div class="index-map">
+        {{render "map" this}}
+      </div>
+      <div class="index-cats">
+        {{render "cats" this}}
+      </div>
+      
     </script>
 
     <script type="text/x-handlebars" data-template-name="cats">
       <div class="cats">
         <h2>cats: {{catCount}}</h2>
         <ul>
-        {{#each itemController="cat"}}
-          <li {{bind-attr class="isEditing:editing"}}>
-            {{#if isEditing}}
-              {{input type="text" value=catName placeholder=name}}
-              <br>{{input type="text" value=catLatitude placeholder=latitude}}
-              <br>{{input type="text" value=catLongitude placeholder=longitude}}
-              <br><button {{action "cancel"}}>cancel</button>
-              <button {{action "saveCat"}}>save changes</button>
-            {{else}}
-              name: {{name}}
-              <br>latitude: {{latitude}}
-              <br>longitude: {{longitude}}
-              <br><button {{action "editCat"}}>edit cat</button>
-              <button {{action "removeCat"}}>remove cat</button>
-            {{/if}}
-          </li>
+        {{#each}}
+          {{render "cat" this}}
         {{/each}}
         </ul>
       </div>
@@ -44,6 +34,25 @@
       </div>
     </script>
 
+    <script type="text/x-handlebars" data-template-name="cat">
+      {{log this}}
+
+      <li {{bind-attr class="isEditing:editing"}}>
+        {{#if isEditing}}
+          {{input type="text" value=catName placeholder=name}}
+          <br>{{input type="text" value=catLatitude placeholder=latitude}}
+          <br>{{input type="text" value=catLongitude placeholder=longitude}}
+          <br><button {{action "cancel"}}>cancel</button>
+          <button {{action "saveCat"}}>save changes</button>
+        {{else}}
+          name: {{name}}
+          <br>latitude: {{latitude}}
+          <br>longitude: {{longitude}}
+          <br><button {{action "editCat"}}>edit cat</button>
+          <button {{action "removeCat"}}>remove cat</button>
+        {{/if}}
+      </li>
+    </script>
 
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.3.0/handlebars.js"></script>
@@ -51,7 +60,12 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/ember-data.js/1.0.0-beta.7/ember-data.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script>
-      window.Mapp = Ember.Application.create();
+      window.Mapp = Ember.Application.create({
+        LOG_ACTIVE_GENERATION: true,
+        LOG_VIEW_LOOKUPS: true,
+        LOG_TRANSITIONS: true,
+        LOG_TRANSITIONS_INTERNAL: true
+      });
 
       Mapp.ApplicationAdapter = DS.FixtureAdapter;
 
@@ -60,8 +74,10 @@
       });
 
       Mapp.Router.map(function() {
-        this.resource("cats");
-        this.resource("map");
+        this.route("index", { path: "/" }, function() {
+          this.resource("cats");
+          this.resource("map");
+        });
       });
 
       Mapp.Cat = DS.Model.extend({
@@ -89,8 +105,16 @@
         }
       ];
 
+      Mapp.IndexRoute = Ember.Route.extend({
+        model: function() {
+          console.log("meadle");
+          return this.store.find("cat");
+        }
+      });
+
       Mapp.CatsRoute = Ember.Route.extend({
         model: function() {
+          console.log("mode");
           return this.store.find("cat");
         }
       });
@@ -197,6 +221,11 @@
             bindInfowindow(marker, name);
           }
         },
+
+        addMarker: function() {
+          console.log("OMG KITTY");
+          console.log(catsModel);
+        }.observes("cats.@each"),
 
         initializeMap: function() {
           var self = this;

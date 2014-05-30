@@ -4,3 +4,8 @@
   width: 700px;
   height: 500px;
 }
+
+.index-cats, .index-map {
+  display: inline-block;
+  vertical-align: top;
+}
