@@ -35,8 +35,6 @@
     </script>
 
     <script type="text/x-handlebars" data-template-name="cat">
-      {{log this}}
-
       <li {{bind-attr class="isEditing:editing"}}>
         {{#if isEditing}}
           {{input type="text" value=catName placeholder=name}}
@@ -107,17 +105,19 @@
 
       Mapp.IndexRoute = Ember.Route.extend({
         model: function() {
-          console.log("meadle");
           return this.store.find("cat");
         }
+        // ,
+        // setupController: function(controller, model) {
+        //   controller.set("model", model);
+        // }
       });
 
-      Mapp.CatsRoute = Ember.Route.extend({
-        model: function() {
-          console.log("mode");
-          return this.store.find("cat");
-        }
-      });
+      // Mapp.CatsRoute = Ember.Route.extend({
+      //   model: function() {
+      //     return this.store.find("cat");
+      //   }
+      // });
 
       Mapp.CatsController = Ember.ArrayController.extend({
         catCount: function() {
@@ -181,9 +181,19 @@
         }
       });
 
+      Mapp.MapController = Ember.ArrayController.extend({
+        // cats: Mapp.Cat.FIXTURES,
+        // cats: this.get("parentController.model"),
+        // cats: function() {
+        //   this.get("store").find("cat").then(function(kitties) {
+        //     console.log("kitties! " + kitties);
+        //     return kitties;
+        //   });
+        // }
+      });
+
       Mapp.MapView = Ember.View.extend({
         classNames: ["mapp"],
-        cats: Mapp.Cat.FIXTURES,
         map: null,
         latitude: 37.751101,
         longitude: -122.412872,
@@ -191,10 +201,28 @@
         infowindow: null,
 
         addMarkers: function() {
-          var cats = this.get("cats");
           var map = this.get("map");
           var markers = this.get("markers");
           var self = this;
+
+          this.get("controller.store").find("cat").then(function(cats) {
+            console.log("cats length: " + cats.get("length"));
+            cats.forEach(function(cat) {
+              var id = cat.get("id");
+              var latitude = cat.get("latitude");
+              var longitude = cat.get("longitude");
+              var name = cat.get("name").toString();
+
+              var marker = new google.maps.Marker({
+                position: new google.maps.LatLng(latitude, longitude),
+                map: map,
+                title: id,
+                draggable: false
+              });
+              markers.push(marker);
+              bindInfowindow(marker, name);
+            });
+          });
 
           function bindInfowindow(marker, content) {
             google.maps.event.addListener(marker, 'click', function(event) {
@@ -205,27 +233,13 @@
               infowindow.open(map,marker);
             });
           }
-
-          for (i = 0; i < cats.length; i++) {
-            var id = cats[i]["id"].toString();
-            var latitude = cats[i]["latitude"];
-            var longitude = cats[i]["longitude"]
-            var name = cats[i]["name"].toString();
-            var marker = new google.maps.Marker({
-              position: new google.maps.LatLng(latitude, longitude),
-              map: map,
-              title: id,
-              draggable: false
-            });
-            markers.push(marker);
-            bindInfowindow(marker, name);
-          }
         },
 
         addMarker: function() {
           console.log("OMG KITTY");
-          console.log(catsModel);
-        }.observes("cats.@each"),
+          console.log("controller.cats: " + this.get("controller.model.cats"));
+          // console.log("new # of cats: " + this.get("controller.cats").length);
+        }.observes("controller.cats"),
 
         initializeMap: function() {
           var self = this;
