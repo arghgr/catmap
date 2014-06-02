@@ -182,14 +182,7 @@
       });
 
       Mapp.MapController = Ember.ArrayController.extend({
-        // cats: Mapp.Cat.FIXTURES,
-        // cats: this.get("parentController.model"),
-        // cats: function() {
-        //   this.get("store").find("cat").then(function(kitties) {
-        //     console.log("kitties! " + kitties);
-        //     return kitties;
-        //   });
-        // }
+
       });
 
       Mapp.MapView = Ember.View.extend({
@@ -204,6 +197,7 @@
           var map = this.get("map");
           var markers = this.get("markers");
           var self = this;
+          var bindInfowindow = this.get("bindInfowindow");
 
           this.get("controller.store").find("cat").then(function(cats) {
             console.log("cats length: " + cats.get("length"));
@@ -220,19 +214,20 @@
                 draggable: false
               });
               markers.push(marker);
-              bindInfowindow(marker, name);
+              bindInfowindow(marker, name, self);
             });
           });
+        },
 
-          function bindInfowindow(marker, content) {
-            google.maps.event.addListener(marker, 'click', function(event) {
-              var infowindow = self.get("infowindow");
-              if (infowindow) infowindow.close();
-              infowindow = new google.maps.InfoWindow({ content: content });
-              self.set("infowindow", infowindow);
-              infowindow.open(map,marker);
-            });
-          }
+        bindInfowindow: function(marker, content, scope) {
+          google.maps.event.addListener(marker, 'click', function(event) {
+            var map = this.get("map");
+            var infowindow = scope.get("infowindow");
+            if (infowindow) infowindow.close();
+            infowindow = new google.maps.InfoWindow({ content: content });
+            scope.set("infowindow", infowindow);
+            infowindow.open(map,marker);
+          });
         },
 
         addMarker: function() {
