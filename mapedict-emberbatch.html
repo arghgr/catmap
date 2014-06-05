@@ -182,7 +182,13 @@
       });
 
       Mapp.MapController = Ember.ArrayController.extend({
-
+        getCats: function() {
+          catStore = this.get("store").find("cat");
+          console.log("cat find");
+          catStore.then(function(cats) {
+            console.log("cats: " + cats);
+          });
+        }
       });
 
       Mapp.MapView = Ember.View.extend({
@@ -198,8 +204,9 @@
           var markers = this.get("markers");
           var self = this;
           var bindInfowindow = this.get("bindInfowindow");
+          var catStore = this.get("controller.store").find("cat");
 
-          this.get("controller.store").find("cat").then(function(cats) {
+          catStore.then(function(cats) {
             console.log("cats length: " + cats.get("length"));
             cats.forEach(function(cat) {
               var id = cat.get("id");
@@ -232,9 +239,9 @@
 
         addMarker: function() {
           console.log("OMG KITTY");
-          console.log("controller.cats: " + this.get("controller.model.cats"));
-          // console.log("new # of cats: " + this.get("controller.cats").length);
-        }.observes("controller.cats"),
+          console.log("controller: " + this.get("controller.controllers"));
+          console.log("markers: " + this.get("markers"));
+        }.observes("controller.content"),
 
         initializeMap: function() {
           var self = this;
@@ -269,6 +276,7 @@
             self.initializeMap();
           }
           this.loadMaps(initialize);
+          this.get("controller").getCats();
         },
 
         willDestroyElement: function() {
