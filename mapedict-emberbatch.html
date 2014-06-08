@@ -14,7 +14,7 @@
       <div class="index-cats">
         {{render "cats" this}}
       </div>
-      
+
     </script>
 
     <script type="text/x-handlebars" data-template-name="cats">
@@ -81,7 +81,20 @@
       Mapp.Cat = DS.Model.extend({
         name: DS.attr("string"),
         longitude: DS.attr("number"),
-        latitude: DS.attr("number")
+        latitude: DS.attr("number"),
+        species: DS.belongsTo("cats", { inverse: "cats" })
+      });
+
+      Mapp.Cats = DS.Model.extend({
+        cats: DS.hasMany("cat", { inverse: "species" }),
+        hasCats: function() {
+          kits = this.get("cats");
+          console.log("woah " + this.get("cats"));
+          return kits.then(function(kitties) {
+            console.log("cats model: " + kitties);
+            return kitties;
+          });
+        }.property("cats")
       });
 
       Mapp.Cat.FIXTURES = [
@@ -184,9 +197,10 @@
       Mapp.MapController = Ember.ArrayController.extend({
         getCats: function() {
           catStore = this.get("store").find("cat");
-          console.log("cat find");
-          catStore.then(function(cats) {
-            console.log("cats: " + cats);
+          console.log("MapController cat find " + catStore);
+          return catStore.then(function(cats) {
+            console.log("getCats: " + cats);
+            return cats;
           });
         }
       });
@@ -204,10 +218,11 @@
           var markers = this.get("markers");
           var self = this;
           var bindInfowindow = this.get("bindInfowindow");
-          var catStore = this.get("controller.store").find("cat");
+          var catStore = this.get("controller").getCats();
 
           catStore.then(function(cats) {
             console.log("cats length: " + cats.get("length"));
+
             cats.forEach(function(cat) {
               var id = cat.get("id");
               var latitude = cat.get("latitude");
@@ -239,9 +254,18 @@
 
         addMarker: function() {
           console.log("OMG KITTY");
-          console.log("controller: " + this.get("controller.controllers"));
-          console.log("markers: " + this.get("markers"));
-        }.observes("controller.content"),
+          var markers = this.get("markers");
+          if (markers) { console.log("markers: " + markers) } else { console.log("lol wut") };
+          console.log("addMarker! controller.model cats:");
+          var cats = this.get("controller.model");
+          cats.forEach(function(cat) {
+            console.log(cat.get("name"));
+          })
+          Ember.run.next(function() {
+            var lastCat = cats.get("lastObject");
+            console.log("last cat: " + lastCat.get("name"));
+          });
+        }.observes("controller.model.@each"),
 
         initializeMap: function() {
           var self = this;
@@ -276,7 +300,7 @@
             self.initializeMap();
           }
           this.loadMaps(initialize);
-          this.get("controller").getCats();
+          console.log("MapController model: " + this.get("controller.model"));
         },
 
         willDestroyElement: function() {
