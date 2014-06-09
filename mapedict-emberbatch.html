@@ -196,10 +196,10 @@
 
       Mapp.MapController = Ember.ArrayController.extend({
         markers: [],
-        map: null,
+        // map: null,
         latitude: 37.751101,
         longitude: -122.412872,
-        infowindow: null,
+        // infowindow: null,
 
         getCats: function() {
           var catStore = this.get("store").find("cat");
@@ -227,7 +227,8 @@
                     draggable: false
                   });
                   markers.push(marker);
-                  bindInfowindow(marker, name, self);
+                  // bindInfowindow(marker, name, self);
+                  bindInfowindow(marker, name);
                 } else {
                   console.log("marker already exists with title (id): " + id);
                 }
@@ -252,15 +253,18 @@
             console.log("no marker to remove");
           }
         },
-        bindInfowindow: function(marker, content, scope) {
-          console.log("bindInfowindow scope: " + scope);
+        bindInfowindow: function(marker, content) {
+          // console.log("bindInfowindow scope: " + scope);
           google.maps.event.addListener(marker, 'click', function(event) {
-            var map = this.get("map");
-            var infowindow = scope.get("infowindow");
+            // var map = this.get("map");
+            var map = window.map;
+            var infowindow = window.infowindow;
+            // var infowindow = scope.get("infowindow");
             console.log("bindInfowindow infowindow: " + infowindow);
             if (infowindow) infowindow.close();
             infowindow = new google.maps.InfoWindow({ content: content });
-            scope.set("infowindow", infowindow);
+            // scope.set("infowindow", infowindow);
+            window.infowindow = infowindow;
             infowindow.open(map,marker);
           });
         }
@@ -293,7 +297,7 @@
             var infowindow = controller.get("infowindow");
             if (infowindow) infowindow.close();
           });
-          self.set("controller.map", map);
+          // self.set("controller.map", map);
           window.map = map;
           self.addMarkers();
           return map;
@@ -302,7 +306,8 @@
         addMarkers: function() {
           var self = this;
           var controller = this.get("controller");
-          var map = controller.get("map");
+          // var map = controller.get("map");
+          var map = window.map;
           console.log("addMarkers map: " + map);
           var markers = controller.get("markers");
           var bindInfowindow = controller.get("bindInfowindow");
@@ -321,7 +326,8 @@
                 draggable: false
               });
               markers.push(marker);
-              bindInfowindow(marker, name, self);
+              // bindInfowindow(marker, name, self);
+              bindInfowindow(marker, name);
             });
           });
         },
@@ -335,7 +341,8 @@
           window.initialize = function() {
             self.initializeMap(self);
             google.maps.event.addListener(window.map, "click", function(){
-              var infowindow = self.get("infowindow");
+              // var infowindow = self.get("infowindow");
+              var infowindow = window.infowindow;
               if (infowindow) infowindow.close();
             });
           }
@@ -350,6 +357,7 @@
           }
           google.maps.event.clearInstanceListeners(map);
           if (window.map) { delete window.map; }
+          if (window.infowindow) { delete window.infowindow; }
         }
       });
 
