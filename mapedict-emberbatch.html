@@ -239,10 +239,6 @@
         removeMarker: function(id) {
           console.log("remove marker: " + id);
           var markers = this.get("markers");
-          console.log("markers: ");
-          markers.map(function(marker) {
-            console.log(marker.get("title") + "!");
-          });
           var markerSearch = markers.filterProperty("title", id);
           if (markerSearch) {
             console.log("removing marker: " + markerSearch[0].get("title"));
@@ -288,7 +284,7 @@
           var self = scope;
           var map = new google.maps.Map(scope.$()[0], mapOptions);
           google.maps.event.addListener(map, "click", function(){
-            var infowindow = controller.get("infowindow");
+            var infowindow = window.infowindow;
             if (infowindow) infowindow.close();
           });
           window.map = map;
