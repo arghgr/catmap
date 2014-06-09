@@ -8,4 +8,7 @@
 .index-cats, .index-map {
   display: inline-block;
   vertical-align: top;
+  font-family: "Helvetica";
+  font-size: 13px;
+  letter-spacing: 0.5px;
 }

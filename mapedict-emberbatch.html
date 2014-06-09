@@ -44,6 +44,7 @@
           <button {{action "saveCat"}}>save changes</button>
         {{else}}
           name: {{name}}
+          <br>id: {{id}}
           <br>latitude: {{latitude}}
           <br>longitude: {{longitude}}
           <br><button {{action "editCat"}}>edit cat</button>
@@ -120,17 +121,7 @@
         model: function() {
           return this.store.find("cat");
         }
-        // ,
-        // setupController: function(controller, model) {
-        //   controller.set("model", model);
-        // }
       });
-
-      // Mapp.CatsRoute = Ember.Route.extend({
-      //   model: function() {
-      //     return this.store.find("cat");
-      //   }
-      // });
 
       Mapp.CatsController = Ember.ArrayController.extend({
         catCount: function() {
@@ -163,6 +154,7 @@
       });
 
       Mapp.CatController = Ember.ObjectController.extend({
+        needs: ["map"],
         isEditing: false,
         actions: {
           editCat: function() {
@@ -190,11 +182,13 @@
             var cat = this.get("model");
             cat.deleteRecord();
             cat.save();
+            this.get("controllers.map").removeMarker(cat.get("id"));
           }
         }
       });
 
       Mapp.MapController = Ember.ArrayController.extend({
+        markers: [],
         getCats: function() {
           catStore = this.get("store").find("cat");
           console.log("MapController cat find " + catStore);
@@ -202,6 +196,19 @@
             console.log("getCats: " + cats);
             return cats;
           });
+        },
+        removeMarker: function(id) {
+          console.log("remove marker: " + id);
+          var markers = this.get("markers");
+          console.log("markers: ");
+          markers.map(function(marker) {
+            console.log(marker.get("title") + "!");
+          });
+          var markerSearch = markers.filterProperty("title", id);
+          if (markerSearch) {
+            console.log("removing marker: " + markerSearch[0].get("title"));
+            markerSearch[0].setMap(null);
+          }
         }
       });
 
@@ -210,12 +217,11 @@
         map: null,
         latitude: 37.751101,
         longitude: -122.412872,
-        markers: [],
         infowindow: null,
 
         addMarkers: function() {
           var map = this.get("map");
-          var markers = this.get("markers");
+          var markers = this.get("controller.markers");
           var self = this;
           var bindInfowindow = this.get("bindInfowindow");
           var catStore = this.get("controller").getCats();
@@ -254,17 +260,38 @@
 
         addMarker: function() {
           console.log("OMG KITTY");
-          var markers = this.get("markers");
-          if (markers) { console.log("markers: " + markers) } else { console.log("lol wut") };
-          console.log("addMarker! controller.model cats:");
+          var markers = this.get("controller.markers");
           var cats = this.get("controller.model");
-          cats.forEach(function(cat) {
-            console.log(cat.get("name"));
-          })
-          Ember.run.next(function() {
-            var lastCat = cats.get("lastObject");
-            console.log("last cat: " + lastCat.get("name"));
-          });
+          var map = this.get("map");
+          var bindInfowindow = this.get("bindInfowindow");
+          var self = this;
+          if (map) {
+            Ember.run.next(function() {
+              var lastCat = cats.get("lastObject");
+              console.log("last cat: " + lastCat.get("name"));
+
+              var id = lastCat.get("id");
+              var latitude = lastCat.get("latitude");
+              var longitude = lastCat.get("longitude");
+              var name = lastCat.get("name").toString();
+
+              if (!cats.filterProperty("id", id)) {
+                var marker = new google.maps.Marker({
+                  position: new google.maps.LatLng(latitude, longitude),
+                  map: map,
+                  title: id,
+                  draggable: false
+                });
+                markers.push(marker);
+                console.log("new marker length: " + markers.length);
+                console.log("new marker: ");
+                console.log(markers[markers.length - 1]);
+                bindInfowindow(marker, name, self);
+              } else {
+                console.log("can't add new marker for: " + id);
+              }
+            });
+          }
         }.observes("controller.model.@each"),
 
         initializeMap: function() {
@@ -284,7 +311,7 @@
           var map = new google.maps.Map(this.$()[0], mapOptions);
           google.maps.event.addListener(map, "click", function(){
             var infowindow = self.get("infowindow");
-            infowindow.close();
+            if (infowindow) infowindow.close();
           });
           this.set("map", map);
           this.addMarkers();
@@ -300,12 +327,11 @@
             self.initializeMap();
           }
           this.loadMaps(initialize);
-          console.log("MapController model: " + this.get("controller.model"));
         },
 
         willDestroyElement: function() {
           var map = this.get("map");
-          var markers = this.get("markers");
+          var markers = this.get("controller.markers");
           for (i = 0; i < markers.length; i++) {
             google.maps.event.clearInstanceListeners(markers[i]);
           }
