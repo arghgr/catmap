@@ -10,6 +10,9 @@
     <script type="text/x-handlebars" data-template-name="index">
       <div class="index-wrapper">
         <div class="index-map">
+        <div class="index-title">
+          <h1>san francisco cat map</h1>
+        </div>
           {{render "map" this}}
         </div>
         <div class="index-cats">
@@ -19,8 +22,8 @@
     </script>
 
     <script type="text/x-handlebars" data-template-name="cats">
+      <h2>cats: {{catCount}}</h2>
       <div class="cats">
-        <h2>cats: {{catCount}}</h2>
         <ul>
         {{#each}}
           {{render "cat" this}}
