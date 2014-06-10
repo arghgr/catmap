@@ -242,7 +242,6 @@
           });
         },
         updateMarker: function(id, name, latitude, longitude) {
-          // console.log("updating marker with id " + id);
           var self = this;
           Ember.run.next(function() {
             var map = window.map;
@@ -250,19 +249,13 @@
             var bindInfowindow = self.get("bindInfowindow");
             if (map) {
               var searchResult = markers.findBy("title", id);
-              // console.log("updateMarker searchResult: ");
-              // console.log(searchResult);
               if (searchResult) {
-                // console.log("searchResult found");
-                // console.log("searchResult position: " + searchResult.get("position"));
                 searchResult.setOptions({
                   position: new google.maps.LatLng(latitude, longitude),
                   map: map,
                   title: id,
                   draggable: false
                 });
-                // console.log("searchResult set:");
-                // console.log(markers.findBy("title", id));
                 google.maps.event.clearInstanceListeners(searchResult);
                 bindInfowindow(searchResult, name);
               } else {
