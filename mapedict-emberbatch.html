@@ -92,15 +92,6 @@
 
       Mapp.Cats = DS.Model.extend({
         cats: DS.hasMany("cat", { inverse: "species" })
-        // ,
-        // hasCats: function() {
-        //   kits = this.get("cats");
-        //   console.log("woah " + this.get("cats"));
-        //   return kits.then(function(kitties) {
-        //     console.log("cats model: " + kitties);
-        //     return kitties;
-        //   });
-        // }.property("cats")
       });
 
       Mapp.Cat.FIXTURES = [
@@ -190,7 +181,6 @@
               var name = savedCat.get("name");
               var latitude = savedCat.get("latitude");
               var longitude = savedCat.get("longitude");
-              console.log("savedCat id: " + id);
               self.get("controllers.map").updateMarker(id, name, latitude, longitude);
             });
           },
@@ -273,7 +263,6 @@
           var markers = this.get("markers");
           var searchResult = markers.filterProperty("title", id);
           if (searchResult) {
-            console.log("removing marker: " + searchResult[0].get("title"));
             searchResult[0].setMap(null);
           } else {
             console.log("no marker to remove");
