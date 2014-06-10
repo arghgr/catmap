@@ -1,14 +1,35 @@
 
+html,body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 
-.mapp {
-  width: 700px;
-  height: 500px;
+.index-view {
+  position: relative;
+  display: block;
+  height: 100%;
+  text-align: center;
+}
+
+.index-wrapper {
+  position: relative;
+/*  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);*/
+  font-family: "Helvetica";
+  font-size: 13px;
+  letter-spacing: 0.5px;
 }
 
 .index-cats, .index-map {
   display: inline-block;
   vertical-align: top;
-  font-family: "Helvetica";
-  font-size: 13px;
-  letter-spacing: 0.5px;
+  text-align: left;
+}
+
+.mapp {
+  width: 700px;
+  height: 500px;
 }
